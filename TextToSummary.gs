@@ -30,12 +30,13 @@ function generateSummaries() {
 function generateSummary(text) {
   var apiKey = 'GEMINI_API_KEY'; // Replace with your actual API key
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey;
+  var prompt = "Can you please generate the summaries for the given text" + text;
   var payload = {
     "contents": [
       {
         "parts": [
           {
-            "text": text
+            "text": prompt
           }
         ]
       }
