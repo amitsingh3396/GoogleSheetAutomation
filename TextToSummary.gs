@@ -19,7 +19,7 @@ function generateSummaries() {
   }
 }
 function generateSummary(text) {
-  var apiKey = 'AIzaSyCKJQlgx5c-mQZkxT5OkkJXBYohHMKuuAY'; // Replace with your actual API key
+  var apiKey = 'GEMINI_API_KEY'; // Replace with your actual API key
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey;
   var payload = {
     "contents": [
