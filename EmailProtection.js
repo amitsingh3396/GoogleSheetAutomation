@@ -1,55 +1,38 @@
 /**
- * This script provides email protection for a Google Sheet.
- * It prevents unauthorized users from editing rows in the "Student" sheet.
- * Only the student and admins are allowed to edit the rows.
- * If a non-admin user tries to edit a row that doesn't belong to them, the script restores the old value and displays an alert.
- * Admins are defined in the "Admins" sheet of the spreadsheet.
+ * Sends summaries by email to recipients listed in a Google Sheet.
+ * Retrieves email addresses and corresponding summaries from the sheet,
+ * and sends an email with the summary to each recipient.
  */
+function sendSummariesByEmail() {
+  // Get the active sheet in the spreadsheet
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
 
-function onEdit(e) {
-  // Triggered when a cell is edited in the spreadsheet
-  if (!e) {
-    return;
-  }
+  // Get the last row number in the sheet
+  var lastRow = sheet.getLastRow();
 
-  var sheet = e.source.getActiveSheet();
-  var range = e.range;
-  var userEmail = Session.getActiveUser().getEmail();
-  var row = range.getRow();
+  // Get the range of email addresses (column A) and summaries (column C)
+  var emailRange = sheet.getRange(2, 1, lastRow - 1, 1);
+  var summaryRange = sheet.getRange(2, 3, lastRow - 1, 1);
 
-  // Check if the edited sheet is the "Student" sheet and the row is not the header row
-  if (sheet.getName() === "Student" && row > 1) {
-    var studentEmail = sheet.getRange(row, 1).getValue().trim();
-    var isAdmin = checkAdmin(userEmail);
+  // Get the values from the email and summary ranges
+  var emails = emailRange.getValues();
+  var summaries = summaryRange.getValues();
 
-    Logger.log('Editing row: ' + row);
-    Logger.log('User email: ' + userEmail);
-    Logger.log('Student email: ' + studentEmail);
-    Logger.log('Is admin: ' + isAdmin);
+  // Loop through each row
+  for (var i = 0; i < emails.length; i++) {
+    var email = emails[i][0];
+    var summary = summaries[i][0];
 
-    // Check if the user is not the student and not an admin
-    if (userEmail !== studentEmail && !isAdmin) {
-      e.range.setValue(e.oldValue); // Restore old value
-      SpreadsheetApp.getUi().alert('You are not allowed to edit this row.');
+    // Check if email and summary are not empty
+    if (email && summary) {
+      sendEmail(email, summary);
     }
   }
 }
 
-/**
- * Checks if the given email is an admin.
- * Admins are defined in the "Admins" sheet of the spreadsheet.
- * @param {string} email - The email to check
- * @returns {boolean} - True if the email is an admin, false otherwise
- */
-function checkAdmin(email) {
-  var adminSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Admins");
-  if (adminSheet) {
-    var adminEmails = adminSheet.getRange("A2:A" + adminSheet.getLastRow()).getValues().flat().filter(String);
-    Logger.log('Admin emails: ' + adminEmails);
-    return adminEmails.includes(email);
-  } else {
-    Logger.log('Admins sheet not found');
-    // If the Admins sheet doesn't exist, assume no one is an admin
-    return false;
-  }
+function sendEmail(email, summary) {
+  var subject = "Summary of Your Text";
+  var message = "Dear User,\n\nHere is the summary of your text:\n\n" + summary + "\n\nBest regards,\nYour Company";
+  
+  MailApp.sendEmail(email, subject, message);
 }
